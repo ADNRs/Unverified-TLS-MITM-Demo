@@ -62,8 +62,9 @@ Open several web pages. If the man-in-the-middle server is up, the plaintext ID 
 
 ```bash
 google-chrome -incognito --ignore-certificate-errors --user-data-dir=/tmp/chrome_dev \
-  "portal.nycu.edu.tw" "cs.nycu.edu.tw" "ccs.nycu.edu.tw" "eecsigp.nycu.edu.tw" "dpeecs.nycu.edu.tw" \
-  "it.nycu.edu.tw" "aa.nycu.edu.tw" "timetable.nycu.edu.tw" "nems.cs.nycu.edu.tw" "ocw.nycu.edu.tw"
+  "portal.nycu.edu.tw" "cs.nycu.edu.tw" "ccs.nycu.edu.tw" "eecsigp.nycu.edu.tw" \
+  "dpeecs.nycu.edu.tw" "it.nycu.edu.tw" "aa.nycu.edu.tw" "timetable.nycu.edu.tw" \
+  "nems.cs.nycu.edu.tw" "ocw.nycu.edu.tw"
 ```
 
 # Disclaimer
