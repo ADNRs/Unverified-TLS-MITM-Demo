@@ -13,15 +13,17 @@ This is a demonstration project showing the potential damage of unverified TLS c
 
 ## Attack Machine
 
-### Enable IP forwarding to allow traffic to go through the attack machine
+### Enable IP forwarding
+
+Enable IP forwarding to allow traffic to go through the attack machine.
 
 ```bash
 sudo sysctl -w net.ipv4.ip_forward=1
 ```
 
-### Perform ARP spoofing on the victim machine and the gateway
+### Perform ARP spoofing
 
-If the attack is successful, the man-in-the-middle scenario holds. The interface name and the gateway IP can be found with `route -n`. The victim IP can be found through IP scanning within the LAN or just by opening a terminal on the victim machine and executing `ifconfig`. Note that at this step, all HTTPS traffic between the victim and servers within 140.113/16 is protected via TLS. To be able to get the plaintext HTTP message, the man-in-the-middle server should pretend to be the real server to the victim and establish the TLS connection with the victim.
+Perform ARP spoofing on both the victim machine and the gateway. If the attack is successful, the man-in-the-middle scenario holds. The interface name and the gateway IP can be found with `route -n`. The victim IP can be found through IP scanning within the LAN or just by opening a terminal on the victim machine and executing `ifconfig`. Note that at this step, all HTTPS traffic between the victim and servers within 140.113/16 is protected via TLS. To be able to get the plaintext HTTP message, the man-in-the-middle server should pretend to be the real server to the victim and establish the TLS connection with the victim.
 
 ```bash
 sudo arpspoof -i <interface name> -c both -t <victim IP> -r <gateway IP>
