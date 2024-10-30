@@ -1,6 +1,6 @@
 # Man-in-the-Middle Attack on Unverified TLS Connections
 
-This is a demonstration project showing the potential damage of unverified TLS connections. The attack is accomplished by ARP spoofing and a simple man-in-the-middle HTTPS server. In this demo, all HTTPS traffic between the victim machine and 140.113/16 held by NYCU is intercepted and redirected to the man-in-the-middle server. The goal is to sniff the inputted ID and password to log into [portal.nycu.edu.tw](https://portal.nycu.edu.tw).
+This is a demonstration project showing the potential damage of unverified TLS connections. The attack is accomplished by ARP spoofing and a simple man-in-the-middle HTTPS server (hereinafter referred to as "middle man"). In this demo, all HTTPS traffic between the victim machine (hereinafter referred to as "victim") and the servers in the IP range 140.113/16 held by NYCU (hereinafter referred to as "servers") is intercepted and redirected to the middle man. The goal is to sniff the inputted ID and password to log into [portal.nycu.edu.tw](https://portal.nycu.edu.tw).
 
 # Prerequisites
 
@@ -23,7 +23,7 @@ sudo sysctl -w net.ipv4.ip_forward=1
 
 ### Perform ARP spoofing
 
-Perform ARP spoofing on both the victim machine and the gateway. If the attack is successful, the man-in-the-middle scenario holds. The interface name and the gateway IP can be found with `route -n`. The victim IP can be found through IP scanning within the LAN or just by opening a terminal on the victim machine and executing `ifconfig`. Note that at this step, all HTTPS traffic between the victim and servers within 140.113/16 is protected via TLS. To be able to get the plaintext HTTP message, the man-in-the-middle server should pretend to be the real server to the victim and establish the TLS connection with the victim.
+Perform ARP spoofing on both the victim and the gateway. This is because the traffic between the victim and the servers definitely goes through the gateway. If the attack is successful, the man-in-the-middle scenario holds. All traffic between the victim and the gateway will now go through this machine. The interface name and the gateway IP can be found with `route -n`. The victim IP can be found through IP scanning within the LAN or just by opening a terminal on the victim machine and executing `ifconfig`. Note that at this step, all HTTPS traffic between the victim and the servers is protected via TLS. To be able to get the plaintext HTTP message, the middle man should pretend to be the server to the victim and establish the TLS connection with the victim.
 
 ```bash
 sudo arpspoof -i <interface name> -c both -t <victim IP> -r <gateway IP>
@@ -31,7 +31,7 @@ sudo arpspoof -i <interface name> -c both -t <victim IP> -r <gateway IP>
 
 ### Set the NAT table
 
-Open a new terminal for the following commands. Clear the NAT table of the `iptables` firewall and add a new rule to redirect HTTPS packets to 140.113/16 to this machine on port 8080. The man-in-the-middle server will listen on that port. At this step, the browser will show "This site can't be reached" for all HTTPS connections to 140.113/16 on the victim machine.
+Open a new terminal for the following commands. Clear the NAT table of the `iptables` firewall and add a new rule to redirect incoming HTTPS packets destined for 140.113/16 to this machine on port 8080. The server will listen on that port. At this step, the browser on the victim machine will show "This site can't be reached" for all HTTPS connections to the servers.
 
 ```bash
 sudo iptables -t nat -F && \
@@ -41,7 +41,7 @@ sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -m iprange \
 
 ### Generate self-signed certificate
 
-Generate a forged self-signed certificate for \*.nycu.edu.tw. It is used to establish the TLS connection between the victim and the man-in-the-middle server. Since the victim is assumed not to verify the legality of the certificate, using the generated certificate is fine. If the attacker has access to the victim machine, a malicious CA certificate can be installed so that all certificates signed by that CA certificate can pass the TLS verification, which allows the attack to be more covert.
+Generate a forged self-signed certificate for \*.nycu.edu.tw. It is used to establish the TLS connection between the victim and the middle man. Since the victim is assumed not to verify the legality of the certificate, using the generated certificate is fine. If the attacker has access to the victim machine, a malicious CA certificate can be installed so that all certificates signed by that CA certificate can pass the TLS verification, which allows the attack to be more covert.
 
 ```bash
 openssl req -new -newkey rsa:4096 -days 30 -nodes -x509 \
@@ -71,4 +71,4 @@ google-chrome -incognito --ignore-certificate-errors --user-data-dir=/tmp/chrome
 
 # Disclaimer
 
-The content provided in this repository is for educational purposes only. Launching such an attack on another person without consent is against the law. The script `attack.py` is part of a course project in Network Security at NYCU CS. Do not plagiarize the script if you are a student doing similar coursework.
+The content provided in this repository is for educational purposes only. Launching such an attack on another person without consent is against the law. The script `attack.py` is part of a course project in the course Network Security at NYCU CS. Do not plagiarize the script if you are a student doing similar coursework.
