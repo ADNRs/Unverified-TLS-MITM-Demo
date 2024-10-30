@@ -235,6 +235,8 @@ class Server:
                 self.search_password(start_line, header, body)
         except (socket.error, socket.timeout):
             pass
+        except Exception as e:
+            print(e)
 
         print(f'[{end_str}] Connection closed')
         victim_sock.close()
