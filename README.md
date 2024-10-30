@@ -31,7 +31,7 @@ sudo arpspoof -i <interface name> -c both -t <victim IP> -r <gateway IP>
 
 ### Set the NAT table
 
-Open a new terminal for the following commands. Clear the NAT table of the `iptables` firewall and add a new rule to redirect incoming HTTPS packets destined for 140.113/16 to this machine on port 8080. The server will listen on that port. At this step, the browser on the victim machine will show "This site can't be reached" for all HTTPS connections to the servers.
+Open a new terminal for the following commands. Clear the NAT table of the `iptables` firewall and add a new rule to redirect incoming HTTPS packets destined for 140.113/16 to this machine on port 8080. The middle man will listen on that port. At this step, the browser on the victim machine will show "This site can't be reached" for all HTTPS connections to the servers.
 
 ```bash
 sudo iptables -t nat -F && \
@@ -66,8 +66,14 @@ Open several web pages. If the man-in-the-middle server is up, the plaintext ID 
 google-chrome -incognito --ignore-certificate-errors --user-data-dir=/tmp/chrome_dev \
   "portal.nycu.edu.tw" "cs.nycu.edu.tw" "ccs.nycu.edu.tw" "eecsigp.nycu.edu.tw" \
   "dpeecs.nycu.edu.tw" "it.nycu.edu.tw" "aa.nycu.edu.tw" "timetable.nycu.edu.tw" \
-  "nems.cs.nycu.edu.tw" "ocw.nycu.edu.tw"
+  "ocw.nycu.edu.tw"
 ```
+
+# The Man-in-the-Middle Server
+
+The `attack.py` implements the man-in-the-middle server with pure Python standard library. The main job of the middle man is to establish two TLS connections, one between the victim and the middle man and one between the middle man and the server. Each time the middle man receives a decrypted HTTP message, it checks if the message body carries the desired information and sends the HTTP message to the server. Then it waits for the response from the server. Once it receives a response, it can samely check the message body and should send the message back to victim. It is tested with the listed websites as shown in the command in [Browse the web](#browse-the-web). The code should be self-explaining.
+
+One thing to note is that for [ocw.nycu.edu.tw](https://ocw.nycu.edu.tw), its certificate chain is not complete (check [https://www.ssl.org/report/ocw.nycu.edu.tw](https://www.ssl.org/report/ocw.nycu.edu.tw)) and thus cannot pass the TLS verification on the middle man side. In such a case, the middle man will instead choose not to verify the TLS certificate as the victim. It is fine since the security of the connection is not a consideration for this attack. However, this introduces the opportunity to launch another man-in-the-middle attack between the middle man and the server, which forms the middle man version of The Human Centipede.
 
 # Disclaimer
 
